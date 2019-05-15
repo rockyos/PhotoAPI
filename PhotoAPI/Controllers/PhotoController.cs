@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PhotoAPI.Extensions;
@@ -19,15 +20,17 @@ namespace PhotoAPI.Controllers
         private readonly IGetPhotoService _getPhotoService;
         private readonly IResizeService _resizer;
         private readonly IDeleteService _deleteService;
-
+        private readonly IAddPhotoService _indexService;
 
         protected ISession Session => HttpContext.Session;
 
-        public PhotoController(IGetPhotoService getPhotoService, IResizeService resizer, IDeleteService deleteService)
+        public PhotoController(IGetPhotoService getPhotoService, IResizeService resizer, IDeleteService deleteService,
+            IAddPhotoService indexService)
         {
             _getPhotoService = getPhotoService;
             _resizer = resizer;
             _deleteService = deleteService;
+            _indexService = indexService;
         }
 
         [HttpGet]
@@ -45,23 +48,21 @@ namespace PhotoAPI.Controllers
             return new FileContentResult(resizedImage, "binary/octet-stream");
         }
 
-        // POST api/values
         [HttpPost]
-        public void Post([FromBody] string value)
+        public async Task PostAsync(IFormFile file)
         {
+            await _indexService.GetIndexServiceAsync(file, Session, _sessionkey);
         }
 
-        // PUT api/values/5
         [HttpPut("{id}")]
         public void Put(int id, [FromBody] string value)
         {
         }
 
-        // DELETE api/values/5
         [HttpDelete("{id}")]
-        public async Task DeleteAsync(string guid)
+        public async Task DeleteAsync(string id)
         {
-            await _deleteService.DeleteAsync(guid, Session, _sessionkey);
+            await _deleteService.DeleteAsync(id, Session, _sessionkey);
         }
     }
 }
