@@ -46,10 +46,10 @@ namespace PhotoAPI
             //services.Configure<EmailSettings>(Configuration.GetSection("EmailSettings"));
             //services.AddSingleton<IEmailSender, EmailSenderService>();
 
-            //services.AddCors(c =>
-            //{
-            //    c.AddPolicy("AllowOrigin", options => options.AllowAnyOrigin());
-            //});
+            services.AddCors(c =>
+            {
+                c.AddPolicy("AllowOrigin", options => options.AllowAnyOrigin());
+            });
 
             services.AddDistributedMemoryCache(); // IDistributedCache
 
@@ -65,11 +65,11 @@ namespace PhotoAPI
             });
 
             services.AddScoped<UnitOfWork>();
-            //services.AddScoped<IResizeService, ResizeService>();
+            services.AddScoped<IResizeService, ResizeService>();
             services.AddScoped<IGetPhotoService, GetPhotoService>();
             //services.AddScoped<IIndexService, IndexService>();
             //services.AddScoped<ISavePhotoService, SavePhotoService>();
-            //services.AddScoped<IDeleteService, DeleteService>();
+            services.AddScoped<IDeleteService, DeleteService>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1).AddViewOptions(options =>
             {
@@ -101,7 +101,7 @@ namespace PhotoAPI
             app.UseStaticFiles();
             app.UseCookiePolicy();
             //app.UseAuthentication();
-            //app.UseCors(options => options.AllowAnyOrigin());
+            app.UseCors(options => options.AllowAnyOrigin());
             app.UseMvc();
         }
     }

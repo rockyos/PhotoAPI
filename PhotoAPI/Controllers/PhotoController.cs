@@ -4,7 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using PhotoAPI.Extensions;
 using PhotoAPI.Models.Dto;
+using PhotoAPI.Models.Entity;
 using PhotoAPI.Services.Interfaces;
 
 namespace PhotoAPI.Controllers
@@ -15,28 +17,32 @@ namespace PhotoAPI.Controllers
     {
         private readonly string _sessionkey = "photos";
         private readonly IGetPhotoService _getPhotoService;
+        private readonly IResizeService _resizer;
+        private readonly IDeleteService _deleteService;
+
 
         protected ISession Session => HttpContext.Session;
 
+        public PhotoController(IGetPhotoService getPhotoService, IResizeService resizer, IDeleteService deleteService)
+        {
+            _getPhotoService = getPhotoService;
+            _resizer = resizer;
+            _deleteService = deleteService;
+        }
 
-        // GET api/values
         [HttpGet]
-        public async Task<ActionResult> GetAsync()
+        public async Task<IEnumerable<PhotoDTO>> GetAsync()
         {
             var photos = await _getPhotoService.GetPhotoDBandSessionAsync(Session, _sessionkey);
-            return JsonResult(photos);
+            return photos;
         }
 
-        private ActionResult JsonResult(List<PhotoDTO> photos)
-        {
-            throw new NotImplementedException();
-        }
-
-        // GET api/values/5
         [HttpGet("{id}")]
-        public ActionResult<string> Get(int id)
+        public async Task<ActionResult> GetAsync(string id, int width)
         {
-            return "value";
+            var sessionPhotos = Session.Get<List<Photo>>(_sessionkey);
+            var resizedImage = await _resizer.GetImageAsync(sessionPhotos, id, width);
+            return new FileContentResult(resizedImage, "binary/octet-stream");
         }
 
         // POST api/values
@@ -53,8 +59,9 @@ namespace PhotoAPI.Controllers
 
         // DELETE api/values/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task DeleteAsync(string guid)
         {
+            await _deleteService.DeleteAsync(guid, Session, _sessionkey);
         }
     }
 }
