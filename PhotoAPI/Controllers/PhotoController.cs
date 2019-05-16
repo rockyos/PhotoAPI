@@ -49,14 +49,15 @@ namespace PhotoAPI.Controllers
         }
 
         [HttpPost]
-        public async Task PostAsync(IFormFile file)
+        public async Task PostAsync([FromForm] IFormFile file)
         {
             await _indexService.GetIndexServiceAsync(file, Session, _sessionkey);
         }
 
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        public void Put(int id, [FromForm] string value)
         {
+
         }
 
         [HttpDelete("{id}")]
